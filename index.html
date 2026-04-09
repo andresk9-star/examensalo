@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Juego de Sociales</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+    font-family: Arial;
+    background: #f0f8ff;
+    text-align: center;
+    padding: 10px;
+}
+
+.pregunta {
+    background: white;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 10px;
+}
+
+.correcta { background-color: #c8f7c5; }
+.incorrecta { background-color: #f7c5c5; }
+
+button {
+    padding: 12px;
+    margin: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    border: none;
+}
+
+.finalizar { background: #4CAF50; color: white; }
+.reiniciar { background: #2196F3; color: white; }
+</style>
+</head>
+
+<body>
+
+<h2>🎮 Juego de Sociales</h2>
+
+<form id="quiz"></form>
+
+<button class="finalizar" onclick="calificar()">Finalizar</button>
+<button class="reiniciar" onclick="iniciar()">Reiniciar 🔄</button>
+
+<div id="resultado"></div>
+
+<audio id="ok" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
+<audio id="bad" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
+
+<script>
+
+const banco = [
+{p:"¿Qué rama crea las leyes?",o:["Judicial","Legislativa","Ejecutiva"],c:1},
+{p:"¿Quién lidera la ejecutiva?",o:["Presidente","Juez","Senador"],c:0},
+{p:"La judicial hace:",o:["Crear leyes","Justicia","Gobernar"],c:1},
+{p:"¿Qué es el voto?",o:["Elegir","Castigar","Crear leyes"],c:0},
+{p:"¿Revocatoria?",o:["Quitar gobernante","Elegir","Ley"],c:0},
+{p:"Cabildo abierto:",o:["Opinar","Elección","Tribunal"],c:0},
+{p:"Ejecutiva:",o:["Aplica leyes","Crea","Juzga"],c:0},
+{p:"Presupuesto participativo:",o:["Elegir","Decidir dinero","Ley"],c:1}
+];
+
+let preguntas = [];
+
+function iniciar(){
+    document.getElementById("resultado").innerHTML="";
+    let quiz = document.getElementById("quiz");
+    quiz.innerHTML="";
+
+    preguntas = banco.sort(()=>Math.random()-0.5).slice(0,5);
+
+    preguntas.forEach((q,i)=>{
+        let div=document.createElement("div");
+        div.className="pregunta";
+
+        let html=`<b>${i+1}. ${q.p}</b><br>`;
+        q.o.forEach((op,j)=>{
+            html+=`<input type="radio" name="q${i}" value="${j}">${op}<br>`;
+        });
+
+        div.innerHTML=html;
+        quiz.appendChild(div);
+    });
+}
+
+function calificar(){
+    let total=0;
+
+    preguntas.forEach((q,i)=>{
+        let ops=document.getElementsByName("q"+i);
+        let div=ops[0].closest(".pregunta");
+
+        ops.forEach(op=>{
+            if(op.checked){
+                if(parseInt(op.value)===q.c){
+                    total++;
+                    div.classList.add("correcta");
+                    ok.play();
+                }else{
+                    div.classList.add("incorrecta");
+                    bad.play();
+                }
+            }
+        });
+    });
+
+    let nota=(total/preguntas.length)*5;
+    nota=nota.toFixed(1);
+
+    document.getElementById("resultado").innerHTML =
+    `⭐ Nota: ${nota}/5`;
+}
+
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+}
+
+iniciar();
+
+</script>
+
+</body>
+</html>
