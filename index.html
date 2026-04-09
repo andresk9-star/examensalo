@@ -5,12 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Juego de Sociales</title>
 
-<link rel="manifest" href="manifest.json">
-
 <style>
 body {
     font-family: Arial;
-    background: #f0f8ff;
+    background: #eef6ff;
     text-align: center;
     padding: 10px;
 }
@@ -19,7 +17,8 @@ body {
     background: white;
     padding: 15px;
     margin: 10px;
-    border-radius: 10px;
+    border-radius: 12px;
+    text-align: left;
 }
 
 .correcta { background-color: #c8f7c5; }
@@ -29,18 +28,24 @@ button {
     padding: 12px;
     margin: 10px;
     font-size: 16px;
-    border-radius: 8px;
+    border-radius: 10px;
     border: none;
 }
 
 .finalizar { background: #4CAF50; color: white; }
 .reiniciar { background: #2196F3; color: white; }
-</style>
-</head>
 
+#resultado {
+    font-size: 18px;
+    margin-top: 20px;
+}
+</style>
+
+</head>
 <body>
 
 <h2>🎮 Juego de Sociales</h2>
+<p>Responde 8 preguntas ⭐</p>
 
 <form id="quiz"></form>
 
@@ -49,30 +54,73 @@ button {
 
 <div id="resultado"></div>
 
-<audio id="ok" src="https://www.soundjay.com/buttons/sounds/button-3.mp3"></audio>
-<audio id="bad" src="https://www.soundjay.com/buttons/sounds/button-10.mp3"></audio>
-
 <script>
 
+// 🔥 BANCO DE 40 PREGUNTAS
 const banco = [
+
 {p:"¿Qué rama crea las leyes?",o:["Judicial","Legislativa","Ejecutiva"],c:1},
-{p:"¿Quién lidera la ejecutiva?",o:["Presidente","Juez","Senador"],c:0},
-{p:"La judicial hace:",o:["Crear leyes","Justicia","Gobernar"],c:1},
-{p:"¿Qué es el voto?",o:["Elegir","Castigar","Crear leyes"],c:0},
-{p:"¿Revocatoria?",o:["Quitar gobernante","Elegir","Ley"],c:0},
-{p:"Cabildo abierto:",o:["Opinar","Elección","Tribunal"],c:0},
-{p:"Ejecutiva:",o:["Aplica leyes","Crea","Juzga"],c:0},
-{p:"Presupuesto participativo:",o:["Elegir","Decidir dinero","Ley"],c:1}
+{p:"¿Quién lidera la rama ejecutiva?",o:["Presidente","Juez","Senador"],c:0},
+{p:"La rama judicial se encarga de:",o:["Gobernar","Hacer justicia","Crear leyes"],c:1},
+{p:"¿Qué es el voto?",o:["Elegir gobernantes","Castigar","Hacer leyes"],c:0},
+{p:"¿Qué es el referendo?",o:["Elegir presidente","Votar leyes","Castigar"],c:1},
+{p:"¿Qué es la revocatoria?",o:["Quitar gobernante","Crear leyes","Elegir"],c:0},
+{p:"¿Qué es cabildo abierto?",o:["Reunión para opinar","Elección","Tribunal"],c:0},
+{p:"¿Qué hace la ejecutiva?",o:["Aplica leyes","Las crea","Las juzga"],c:0},
+{p:"¿Quién hace parte de la judicial?",o:["Jueces","Senadores","Presidentes"],c:0},
+{p:"¿Qué es iniciativa popular?",o:["Proponer leyes","Castigar","Elegir"],c:0},
+
+// ANALISIS
+{p:"Si un presidente construye colegios, ¿qué rama actúa?",o:["Ejecutiva","Judicial","Legislativa"],c:0},
+{p:"Si un juez decide un caso, ¿qué rama es?",o:["Judicial","Ejecutiva","Legislativa"],c:0},
+{p:"Si el Congreso crea una ley, ¿qué rama es?",o:["Legislativa","Ejecutiva","Judicial"],c:0},
+{p:"Si votas por alcalde, estás usando:",o:["Voto","Referendo","Cabildo"],c:0},
+{p:"Si decides sobre una ley votando, es:",o:["Referendo","Revocatoria","Cabildo"],c:0},
+{p:"Si la gente propone una ley, es:",o:["Iniciativa popular","Voto","Revocatoria"],c:0},
+{p:"Si quitan a un alcalde, es:",o:["Revocatoria","Cabildo","Referendo"],c:0},
+{p:"Si opinas en reunión pública:",o:["Cabildo abierto","Voto","Ley"],c:0},
+
+// MÁS
+{p:"¿Cuántas ramas hay?",o:["3","2","4"],c:0},
+{p:"¿Qué rama gobierna?",o:["Ejecutiva","Judicial","Legislativa"],c:0},
+{p:"¿Quién hace leyes?",o:["Congreso","Jueces","Presidente"],c:0},
+{p:"¿Quién juzga?",o:["Jueces","Presidente","Senadores"],c:0},
+{p:"¿Qué es presupuesto participativo?",o:["Decidir dinero público","Elegir presidente","Crear leyes"],c:0},
+{p:"¿Para qué sirve el voto?",o:["Elegir","Castigar","Juzgar"],c:0},
+{p:"¿Quién ejecuta las leyes?",o:["Presidente","Juez","Congreso"],c:0},
+
+// ANALISIS MÁS COMPLEJO
+{p:"Si una ley no se cumple, ¿quién actúa?",o:["Judicial","Ejecutiva","Legislativa"],c:0},
+{p:"Si se propone una ley nueva, es:",o:["Iniciativa popular","Voto","Cabildo"],c:0},
+{p:"Si se decide el gasto en parques:",o:["Presupuesto participativo","Referendo","Ley"],c:0},
+{p:"Si el presidente aplica una ley:",o:["Ejecutiva","Judicial","Legislativa"],c:0},
+{p:"Si un juez castiga un delito:",o:["Judicial","Ejecutiva","Legislativa"],c:0},
+{p:"Si el Congreso aprueba normas:",o:["Legislativa","Judicial","Ejecutiva"],c:0},
+
+// EXTRA
+{p:"¿Qué es una ley?",o:["Regla del país","Castigo","Elección"],c:0},
+{p:"¿Quién representa al país?",o:["Presidente","Juez","Senador"],c:0},
+{p:"¿Qué hacen los ciudadanos?",o:["Participan","Gobiernan solos","Juzgan"],c:0},
+{p:"¿Qué permite opinar?",o:["Cabildo","Voto","Revocatoria"],c:0},
+{p:"¿Qué permite elegir?",o:["Voto","Cabildo","Ley"],c:0},
+{p:"¿Qué permite cambiar gobernante?",o:["Revocatoria","Ley","Referendo"],c:0},
+{p:"¿Qué permite decidir leyes?",o:["Referendo","Voto","Cabildo"],c:0},
+{p:"¿Qué ayuda a decidir dinero?",o:["Presupuesto participativo","Voto","Ley"],c:0}
+
 ];
 
 let preguntas = [];
+
+function mezclar(array){
+    return array.sort(()=>Math.random()-0.5);
+}
 
 function iniciar(){
     document.getElementById("resultado").innerHTML="";
     let quiz = document.getElementById("quiz");
     quiz.innerHTML="";
 
-    preguntas = banco.sort(()=>Math.random()-0.5).slice(0,5);
+    preguntas = mezclar([...banco]).slice(0,8);
 
     preguntas.forEach((q,i)=>{
         let div=document.createElement("div");
@@ -80,7 +128,7 @@ function iniciar(){
 
         let html=`<b>${i+1}. ${q.p}</b><br>`;
         q.o.forEach((op,j)=>{
-            html+=`<input type="radio" name="q${i}" value="${j}">${op}<br>`;
+            html+=`<input type="radio" name="q${i}" value="${j}"> ${op}<br>`;
         });
 
         div.innerHTML=html;
@@ -100,10 +148,8 @@ function calificar(){
                 if(parseInt(op.value)===q.c){
                     total++;
                     div.classList.add("correcta");
-                    ok.play();
                 }else{
                     div.classList.add("incorrecta");
-                    bad.play();
                 }
             }
         });
@@ -112,12 +158,15 @@ function calificar(){
     let nota=(total/preguntas.length)*5;
     nota=nota.toFixed(1);
 
-    document.getElementById("resultado").innerHTML =
-    `⭐ Nota: ${nota}/5`;
-}
+    let mensaje="";
+    if(nota==5) mensaje="🌟 Excelente!";
+    else if(nota>=4) mensaje="👏 Muy bien!";
+    else if(nota>=3) mensaje="👍 Puedes mejorar";
+    else mensaje="💪 Sigue practicando";
 
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('sw.js');
+    document.getElementById("resultado").innerHTML =
+    `⭐ Nota: <b>${nota}/5</b><br>${mensaje}`;
+
 }
 
 iniciar();
